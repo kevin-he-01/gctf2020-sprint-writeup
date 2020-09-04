@@ -1,6 +1,7 @@
 #! /usr/bin/env python3
 # Extracted from ushort[256] @ (mem + 0x7000)
-pallete = [
+# Prime indices are 0x0 while composite indices are 0x1, extracted from memory dump
+is_composite = [
     0x0001, 0x0001, 0x0000, 0x0000, 0x0001, 0x0000, 0x0001, 0x0000,
     0x0001, 0x0001, 0x0001, 0x0000, 0x0001, 0x0000, 0x0001, 0x0001,
     0x0001, 0x0000, 0x0001, 0x0000, 0x0001, 0x0001, 0x0001, 0x0000,
@@ -54,21 +55,21 @@ ea 2b 44 17 a0 84 ca 8f b7 3b 38 2f e8 73 84 ad
 55 47 07 83 ea 2b 79 95 4f 3d a3 11 dd c1 1d 89
 """.replace('\n', ' '))
 
-stars = list(bytes.fromhex('7d ff 51 b7 53 3f f1 75 1f'))
+checkpoints = list(bytes.fromhex('7d ff 51 b7 53 3f f1 75 1f'))
 
 start = 0x11
 
-assert len(pallete) == 256
+assert len(is_composite) == 256
 assert len(reference) == 256
 
 for i in range(256):
     if i % 16 == 0:
         print() # newline
-    v = pallete[reference[i]]
+    v = is_composite[reference[i]]
     if i == start:
         print('*', end='')
-    elif i in stars:
-        order = stars.index(i)
+    elif i in checkpoints:
+        order = checkpoints.index(i)
         print(order, end='')
         assert not v
     elif v:
