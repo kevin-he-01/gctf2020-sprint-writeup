@@ -1,4 +1,7 @@
 #! /usr/bin/env python3
+
+import sys
+
 # Extracted from ushort[256] @ (mem + 0x7000)
 # Prime indices are 0x0 while composite indices are 0x1, extracted from memory dump
 is_composite = [
@@ -62,19 +65,39 @@ start = 0x11
 assert len(is_composite) == 256
 assert len(reference) == 256
 
-for i in range(256):
-    if i % 16 == 0:
-        print() # newline
-    v = is_composite[reference[i]]
-    if i == start:
-        print('*', end='')
-    elif i in checkpoints:
-        order = checkpoints.index(i)
-        print(order, end='')
-        assert not v
-    elif v:
-        print('#', end='')
-    else:
-        print('.', end='')
+if len(sys.argv) >= 2 and sys.argv[1] == '-fancy': # Require a terminal capable of recognizing ANSI escape sequences
+    print()
+    for i in range(256):
+        v = is_composite[reference[i]]
+        if v:
+            print('\x1b[7m', end='')
+        if i == start:
+            print('\x1b[1m\x1b[31m*\x1b[0m', end=' ')
+        elif i in checkpoints:
+            order = checkpoints.index(i)
+            print('\x1b[1m\x1b[32m' + str(order) + '\x1b[0m', end=' ')
+            # assert not v
+        else:
+            print('.', end=' ')
+        if v:
+            print('\x1b[0m', end='')
+        if i % 16 == 15:
+            print('\x1b[7m. \x1b[0m') # extra border and newline
+    print('\x1b[7m' + '. ' * 17 + '\x1b[0m')
+else:
+    for i in range(256):
+        if i % 16 == 0:
+            print() # newline
+        v = is_composite[reference[i]]
+        if i == start:
+            print('*', end='')
+        elif i in checkpoints:
+            order = checkpoints.index(i)
+            print(order, end='')
+            assert not v
+        elif v:
+            print('#', end='')
+        else:
+            print('.', end='')
 
 print()
