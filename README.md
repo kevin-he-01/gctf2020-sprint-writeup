@@ -1,4 +1,5 @@
 # Files related to my writeup for Sprint from Google CTF 2020
+Writeup file: [sprint-writeup.md](./sprint-writeup.md)
 - [`read-fstrings.py`](./read-fstrings.py): Generate assembly listing and write to `instructions-fstr.txt`, which is necessary for all later steps
 - [`disassemble.py`](./disassemble.py): Generate human readable assembly listing for the format strings
 ## Steps for x86 binary generation
