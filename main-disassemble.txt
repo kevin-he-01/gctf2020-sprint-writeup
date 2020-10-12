@@ -1,0 +1,133 @@
+/* WARNING: Globals starting with '_' overlap smaller symbols at the same address */
+
+void main(void)
+
+{
+  bool bVar1;
+  char cVar2;
+  short sVar3;
+  ushort uVar4;
+  short sVar5;
+  short sVar6;
+  char cVar7;
+  
+  DAT_00417000 = 1;
+  DAT_00417002 = 1;
+  sVar3 = 2;
+  /* Sieve of Eratosthenes, builds a 8-bit primality table at (mem + 0x7000) */
+  do {
+    if ((char)*(undefined2 *)(mem + (ushort)(sVar3 * 2 + 0x7000)) == '\0') {
+      DAT_0041ffef = sVar3 * 2;
+      while ((char)(_DAT_0041ffef >> 8) == '\0'
+                    /* WARNING: Ignoring partial resolution of indirect */) {
+        *(undefined2 *)(mem + (ushort)(DAT_0041ffef * 2 + 0x7000)) = 1;
+        DAT_0041ffef = DAT_0041ffef + sVar3;
+      }
+    }
+    sVar3 = sVar3 + 1;
+  } while ((char)sVar3 != '\0');
+  uVar4 = 0xe000; // password: mem + 0xe000
+  cVar7 = 0;
+  while ((char)*(undefined2 *)(mem + uVar4) != '\0') {
+    cVar7 = cVar7 + -1;
+    uVar4 = uVar4 + 1;
+  }
+  if (cVar7 == 2) { // strlen(password) == 254, 254 = 256 - 2
+    sVar6 = 0;
+    sVar3 = 0;
+    bVar1 = true;
+    _addr_ra = 0;
+    uVar4 = DAT_0041f100; // = 0x11, initial location in the maze: (1, 1)
+    while (cVar7 = (char)*(undefined2 *)(mem + (ushort)(sVar6 + 0xe000)), cVar7 != '\0') {
+      sVar6 = sVar6 + 1; // moves: u=up, r=right, d=down, l=left
+      if (cVar7 == 'u') {
+        sVar5 = -0x10; // decrease Y coordinate
+      }
+      else {
+        if (cVar7 == 'r') {
+          sVar5 = 1; // increase X coordinate
+        }
+        else {
+          if (cVar7 == 'd') {
+            sVar5 = 0x10; // increase Y coordinate
+          }
+          else {
+            if (cVar7 == 'l') {
+              sVar5 = -1; // decrease X coordinate
+            }
+            else {
+              bVar1 = false; // fail, bad character.
+              sVar5 = 0;
+              _addr_ra = 1;
+            }
+          }
+        }
+      }
+      uVar4 = uVar4 + sVar5;
+      _DAT_0041ffef = _DAT_0041ffef & 0xff0000 | (uint3)uVar4;
+      if ((char)((uint3)uVar4 >> 8) != '\0') { // upper 8-bit of uVar4 (coordinate) should always be 0, otherwise the Y coordinate has overflown/underflown
+        _addr_ra = 4; // Y coordinate out of 0x0 - 0xf range, fail
+        return;
+      }
+      _DAT_0041ffef = (uint3)(byte)*(ushort *)(mem + (ushort)(uVar4 - 0x1000));
+      DAT_0041ffef = *(ushort *)(mem + (ushort)(uVar4 - 0x1000)) & 0xff; // access a 8-bit number in a char[256] (or char[16][16]) table at (mem + 0xf000) with coordinate as the index
+      if ((char)*(undefined2 *)(mem + (ushort)(DAT_0041ffef * 2 + 0x7000)) == '\0') { // check whether the 8-bit number is prime using the primality table at (mem + 0x7000), prime: passable block, composite: wall
+        if ((char)((char)*(undefined2 *)(mem + (ushort)(sVar3 - 0xefd)) + (char)uVar4) == '\0') { // reached a checkpoint
+          sVar3 = sVar3 + 1; // increase checkpoint counter by 1
+        }
+      }
+      else {
+        bVar1 = false; // fail, hit a wall block
+        _addr_ra = 2;
+      }
+    }
+    if (bVar1) {
+      if ((char)sVar3 == 9) { // must get all 9 "stars" (visit 9 locations in order)
+        sVar6 = 0;
+        sVar3 = 0;
+        do { // decrypt the 39-character flag
+          if ((char)sVar6 == 39) {
+            *(undefined2 *)(mem + (ushort)(sVar6 + 0xe800)) = 0;
+            return;
+          }
+          cVar7 = 4;
+          sVar5 = 0;
+          do {
+            sVar5 = sVar5 * 4;
+            cVar2 = (char)*(undefined2 *)(mem + (ushort)(sVar3 + 0xe000));
+            if (cVar2 != 'u') {
+              if (cVar2 == 'r') {
+                sVar5 = sVar5 + 1;
+              }
+              else {
+                if (cVar2 == 'd') {
+                  sVar5 = sVar5 + 2;
+                }
+                else {
+                  if (cVar2 != 'l') {
+                    DAT_0041e800 = 0;
+                    return;
+                  }
+                  sVar5 = sVar5 + 3;
+                }
+              }
+            }
+            sVar3 = sVar3 + 1;
+            cVar7 = cVar7 + -1;
+          } while (cVar7 != 0);
+          *(undefined2 *)(mem + (ushort)(sVar6 + 0xe800)) =
+               *(undefined2 *)(mem + (ushort)(sVar6 - 0xef4));
+          *(short *)(mem + (ushort)(sVar6 + 0xe800)) =
+               *(short *)(mem + (ushort)(sVar6 + 0xe800)) + sVar5;
+          sVar6 = sVar6 + 1;
+        } while( true );
+      }
+      _addr_ra = 3;
+    }
+  }
+  else {
+    _addr_ra = 5;
+  }
+  DAT_0041e800 = 0;
+  return;
+}
